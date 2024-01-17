@@ -43,12 +43,23 @@ RUN apt-get update \
   && apt-get clean
 
 #install latest opera stable
-RUN curl -L -o /tmp/opera.deb https://download3.operacdn.com/pub/opera/desktop/$(wget -qO- "https://download3.operacdn.com/pub/opera/desktop/" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n 1)/linux/Opera_$(wget -qO- "https://download3.operacdn.com/pub/opera/desktop/" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n 1)_amd64.deb \
+RUN apt-get update\
+  && apt-get install -y gpg \
+  && cd /tmp \
+  && curl https://deb.opera.com/archive.key | gpg --dearmor > opera.gpg && install -o root -g root -m 644 opera.gpg /etc/apt/trusted.gpg.d/ \
+  && echo "deb [arch=i386,amd64] https://deb.opera.com/opera-stable/ stable non-free" > /etc/apt/sources.list.d/opera-stable.list \
   && apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/opera.deb\
-  #&& mv /usr/bin/opera /usr/bin/opera-ok \
-  #&& echo '#!/bin/bash\nif [[ "$@" == *"--version"* ]]; then\n/usr/bin/opera-ok --version\nelif [[ "$@" == *"--help"* ]]; then\n/usr/bin/opera-ok --help\nelse  /usr/bin/opera-ok --disable-gpu --headless --no-sandbox --disable-dev-shm-usage "$@"\nfi' > /usr/bin/opera \
-  #&& chmod +x /usr/bin/opera \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y opera-stable \
   && rm -rf /tmp/* \
+  && apt-get remove -y gpg \
   && apt-get autoremove -y\
   && apt-get clean
+
+# don t turn when directory linux not in latest version
+#RUN curl -L -o /tmp/opera.deb https://download3.operacdn.com/pub/opera/desktop/$(wget -qO- "https://download3.operacdn.com/pub/opera/desktop/" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n 1)/linux/Opera_$(wget -qO- "https://download3.operacdn.com/pub/opera/desktop/" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n 1)_amd64.deb 
+# && apt-get update 
+#RUN DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/opera.deb
+#RUN   rm -rf /tmp/* \
+#  && apt-get remove -y gpg \
+#  && apt-get autoremove -y\
+#  && apt-get clean
